@@ -56,19 +56,42 @@ namespace Obfuscar
             this.typeAttrib = typeAttrib;
         }
 
+        private static MethodAttributes GetPropertyMethodAttributes(PropertyDefinition prop)
+        {
+            if (prop.GetMethod != null)
+                return prop.GetMethod.Attributes;
+            if (prop.SetMethod != null)
+                return prop.SetMethod.Attributes;
+            return 0;
+        }
+
         public bool Test(PropertyKey prop, InheritMap map)
         {
-            if (Helper.CompareOptionalRegex(prop.TypeKey.Fullname, type) &&
-                !MethodTester.CheckMemberVisibility(attrib, typeAttrib, prop.GetterMethodAttributes,
-                    prop.DeclaringType))
+            // method name matches type regex?
+            if (!String.IsNullOrEmpty(type) && !Helper.CompareOptionalRegex(prop.TypeKey.Fullname, type))
             {
-                if (name != null)
-                    return Helper.CompareOptionalRegex(prop.Name, name);
-                else
-                    return nameRx.IsMatch(prop.Name);
+                return false;
             }
 
-            return false;
+            // method visibility matches
+            if (MethodTester.CheckMemberVisibility(attrib, typeAttrib, GetPropertyMethodAttributes(prop.Property), prop.DeclaringType))
+            {
+                return false;
+            }
+
+            // method's name matches
+            if (nameRx != null && !nameRx.IsMatch(prop.Name))
+            {
+                return false;
+            }
+
+            // method's name matches
+            if (!string.IsNullOrEmpty(name) && !Helper.CompareOptionalRegex(prop.Name, name))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -56,18 +56,44 @@ namespace Obfuscar
             this.typeAttrib = typeAttrib;
         }
 
+        private static MethodAttributes GetEventMethodAttributes(EventDefinition evt)
+        {
+            if (evt.AddMethod != null)
+                return evt.AddMethod.Attributes;
+            if (evt.RemoveMethod != null)
+                return evt.RemoveMethod.Attributes;
+            if (evt.InvokeMethod != null)
+                return evt.InvokeMethod.Attributes;
+            return 0;
+        }
+
         public bool Test(EventKey evt, InheritMap map)
         {
-            if (Helper.CompareOptionalRegex(evt.TypeKey.Fullname, type) &&
-                !MethodTester.CheckMemberVisibility(attrib, typeAttrib, evt.AddMethodAttributes, evt.DeclaringType))
+            // method name matches type regex?
+            if (!String.IsNullOrEmpty(type) && !Helper.CompareOptionalRegex(evt.TypeKey.Fullname, type))
             {
-                if (name != null)
-                    return Helper.CompareOptionalRegex(evt.Name, name);
-                else
-                    return nameRx.IsMatch(evt.Name);
+                return false;
             }
 
-            return false;
+            if (MethodTester.CheckMemberVisibility(attrib, typeAttrib, GetEventMethodAttributes(evt.Event), evt.DeclaringType))
+            {
+                return false;
+            }
+
+            // method's name matches
+            if (nameRx != null && !nameRx.IsMatch(evt.Name))
+            {
+                return false;
+            }
+
+            // method's name matches
+            if (!string.IsNullOrEmpty(name) && !Helper.CompareOptionalRegex(evt.Name, name))
+            {
+                return false;
+            }
+
+            return true;
+
         }
     }
 }
