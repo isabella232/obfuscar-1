@@ -1156,6 +1156,17 @@ namespace Obfuscar
                     "and all methods in the group should already be marked skipped.");
                 Mapping.UpdateMethod(methodKey, ObfuscationStatus.Skipped, skipRename);
 
+                if (@group.Methods.Any(m =>
+                {
+                    var state = Mapping.GetMethod(m);
+                    return state.Status == ObfuscationStatus.Skipped && state.StatusText == "attribute";
+                }))
+                {
+                    // If some method in hierarchy was marked by an attribute, skip entire hiararchy as nothing we can do there.
+                    // It's not an option to explicitly Skip them since there may be too many.
+                    return;
+                }
+
                 var message =
                     new StringBuilder(
                             "Inconsistent virtual method obfuscation state detected. Abort. Please review the following methods,")
