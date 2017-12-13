@@ -1135,10 +1135,16 @@ namespace Obfuscar
 
                 // set up methods to be renamed
                 foreach (MethodKey m in @group.Methods)
+                {
+                    var t = Mapping.GetMethod(m);
+                    if (t.Status != ObfuscationStatus.Unknown)
+                        continue;
+
                     if (skipRename == null)
-                        Mapping.UpdateMethod(m, ObfuscationStatus.WillRename, groupName);
+                        t.Update(ObfuscationStatus.WillRename, groupName);
                     else
-                        Mapping.UpdateMethod(m, ObfuscationStatus.Skipped, skipRename);
+                        t.Update(ObfuscationStatus.Skipped, skipRename);
+                }
 
                 // make sure the classes' name groups are updated
                 foreach (NameGroup t in nameGroups)
