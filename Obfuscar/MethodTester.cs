@@ -138,7 +138,7 @@ namespace Obfuscar
                 if (string.Equals(typeAttribute, "public", StringComparison.InvariantCultureIgnoreCase))
                 {
                     if (!declaringType.IsTypePublic())
-                        return false;
+                        return true;
                 }
                 else
                     throw new ObfuscarException(string.Format(
