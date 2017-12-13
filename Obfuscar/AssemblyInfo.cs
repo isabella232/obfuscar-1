@@ -81,7 +81,7 @@ namespace Obfuscar
             AssemblyInfo info = new AssemblyInfo(project);
 
             // pull out the file attribute, but don't process anything empty
-            string val = Helper.GetAttribute(reader, "file", vars);
+            string val = Environment.ExpandEnvironmentVariables(Helper.GetAttribute(reader, "file", vars));
             if (val.Length > 0)
             {
                 info.LoadAssembly(val);
