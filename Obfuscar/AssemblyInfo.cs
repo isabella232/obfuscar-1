@@ -848,6 +848,10 @@ namespace Obfuscar
             {
                 switch (method.Method.SemanticsAttributes)
                 {
+                    case MethodSemanticsAttributes.None:
+                        // Do nothing, most likely this is a dangling accessor method without
+                        // associated event or property                        
+                        break;
                     case MethodSemanticsAttributes.Getter:
                     case MethodSemanticsAttributes.Setter:
                         message = "skipping properties";
