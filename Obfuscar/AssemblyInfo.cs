@@ -851,11 +851,21 @@ namespace Obfuscar
                     case MethodSemanticsAttributes.Getter:
                     case MethodSemanticsAttributes.Setter:
                         message = "skipping properties";
-                        return !project.Settings.RenameProperties;
+                        if (!project.Settings.RenameProperties)
+                        {
+                            return true;
+                        }
+
+                        break;
                     case MethodSemanticsAttributes.AddOn:
                     case MethodSemanticsAttributes.RemoveOn:
                         message = "skipping events";
-                        return !project.Settings.RenameEvents;
+                        if (!project.Settings.RenameEvents)
+                        {
+                            return true;
+                        }
+
+                        break;
                     default:
                         message = "special name";
                         return true;
