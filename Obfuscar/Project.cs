@@ -121,8 +121,8 @@ namespace Obfuscar
                 if (Type.GetType("System.MonoType") != null)
                     throw new ObfuscarException("Key containers are not supported for Mono.");
 
-                var lKeyFileName = vars.GetValue("KeyFile", null);
-                var lKeyContainerName = vars.GetValue("KeyContainer", null);
+                var lKeyFileName = settings.KeyFile;
+                var lKeyContainerName = settings.KeyContainer;
 
                 if (lKeyFileName == null && lKeyContainerName == null)
                     return null;
