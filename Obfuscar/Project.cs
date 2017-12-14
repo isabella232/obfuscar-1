@@ -30,7 +30,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using Obfuscar.Helpers;
 using System.Xml.Linq;
 
@@ -92,17 +91,14 @@ namespace Obfuscar
 
                 if (lKeyFileName == null && lKeyContainerName == null)
                     return null;
-                if (lKeyFileName != null && lKeyContainerName != null)
-                    throw new ObfuscarException("'Key file' and 'Key container' properties cann't be setted together.");
 
                 try
                 {
-                    keyPair = File.ReadAllBytes(vars.GetValue("KeyFile", null));
+                    keyPair = File.ReadAllBytes(lKeyFileName);
                 }
                 catch (Exception ex)
                 {
-                    throw new ObfuscarException(
-                        String.Format("Failure loading key file \"{0}\"", vars.GetValue("KeyFile", null)), ex);
+                    throw new ObfuscarException(String.Format("Failure loading key file \"{0}\"", lKeyFileName), ex);
                 }
 
                 return keyPair;
