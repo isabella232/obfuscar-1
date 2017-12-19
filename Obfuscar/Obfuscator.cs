@@ -1196,18 +1196,13 @@ namespace Obfuscar
                     new StringBuilder(
                             "Inconsistent virtual method obfuscation state detected. Abort. Please review the following methods,")
                         .AppendLine();
-                var first = @group.Methods.First();
-                totalVirtualSkips++;
-                message.AppendFormat("<SkipMethod name=\"{0}\" typeinherits=\"{1}\" />", first.Name, first.TypeKey.Fullname).AppendLine();
-                message.AppendFormat("- total skips so far {0}", totalVirtualSkips).AppendLine();
                 foreach (var item in @group.Methods)
                 {
                     var state = Mapping.GetMethod(item);
                     message.AppendFormat("{0}->{1}:{2}", item, state.Status, state.StatusText).AppendLine();
                 }
 
-                System.Console.WriteLine(message);
-                //throw new ObfuscarException(message.ToString());
+                throw new ObfuscarException(message.ToString());
             }
             else
             {
