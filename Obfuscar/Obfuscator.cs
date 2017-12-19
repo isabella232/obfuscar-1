@@ -1135,6 +1135,14 @@ namespace Obfuscar
 
                 @group.Name = groupName;
 
+                var firstExistingSkipTest = @group.Methods.Select(m =>
+                {
+                    var state = Mapping.GetMethod(m);
+                    return state.Status == ObfuscationStatus.Skipped ? state.StatusText : "";
+                }).FirstOrDefault();
+                if (skipRename == null && firstExistingSkipTest != null)
+                    skipRename = "by other method";
+
                 // set up methods to be renamed
                 foreach (MethodKey m in @group.Methods)
                 {
@@ -1172,6 +1180,15 @@ namespace Obfuscar
                 {
                     // If some method in hierarchy was marked by an attribute, skip entire hiararchy as nothing we can do there.
                     // It's not an option to explicitly Skip them since there may be too many.
+
+                    // Verify other methods in group are skipped
+                    foreach (var item in @group.Methods)
+                    {
+                        var state = Mapping.GetMethod(item);
+                        if (state.Status != ObfuscationStatus.Skipped)
+                            state.Update(ObfuscationStatus.Skipped, "attribute on other method");
+                    }
+
                     return;
                 }
 
