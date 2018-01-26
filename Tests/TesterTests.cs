@@ -109,7 +109,7 @@ namespace ObfuscarTests
         {
             Obfuscar.TypeKey typeKey = new Obfuscar.TypeKey("anything", "ns", "name");
             var mock = new TypeReference(string.Empty, "type", null, null);
-            Obfuscar.FieldKey key = new Obfuscar.FieldKey(typeKey, "type", "field",
+            Obfuscar.FieldKey key = new Obfuscar.FieldKey(typeKey, mock, "field",
                 new FieldDefinition("field", FieldAttributes.Public, mock)
                 {
                     DeclaringType = new TypeDefinition(string.Empty, "type", TypeAttributes.Public)

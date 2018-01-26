@@ -369,7 +369,7 @@ namespace Obfuscar
             AssemblyInfo info)
         {
             string sig = field.FieldType.FullName;
-            var fieldKey = new FieldKey(typeKey, sig, field.Name, field);
+            var fieldKey = new FieldKey(typeKey, field.FieldType, field.Name, field);
             NameGroup nameGroup = GetNameGroup(nameGroups, sig);
 
             // skip filtered fields

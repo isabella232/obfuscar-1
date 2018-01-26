@@ -32,11 +32,11 @@ namespace Obfuscar
     class FieldKey
     {
         public FieldKey(FieldDefinition field)
-            : this(new TypeKey((TypeDefinition) field.DeclaringType), field.FieldType.FullName, field.Name, field)
+            : this(new TypeKey((TypeDefinition) field.DeclaringType), field.FieldType, field.Name, field)
         {
         }
 
-        public FieldKey(TypeKey typeKey, string type, string name, FieldDefinition fieldDefinition)
+        public FieldKey(TypeKey typeKey, TypeReference type, string name, FieldDefinition fieldDefinition)
         {
             this.TypeKey = typeKey;
             this.Type = type;
@@ -58,7 +58,7 @@ namespace Obfuscar
 
         public TypeKey TypeKey { get; }
 
-        public string Type { get; }
+        public TypeReference Type { get; }
 
         public string Name { get; }
 
@@ -67,8 +67,8 @@ namespace Obfuscar
             FieldReference fieldRef = member as FieldReference;
             if (fieldRef != null)
             {
-                if (TypeKey.Matches(fieldRef.DeclaringType))
-                    return Type == fieldRef.FieldType.FullName && Name == fieldRef.Name;
+                if (Name == fieldRef.Name && TypeKey.Matches(fieldRef.DeclaringType))
+                    return MethodKey.TypeMatch(Type, fieldRef.FieldType);
             }
 
             return false;
