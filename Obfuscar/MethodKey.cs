@@ -25,6 +25,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using Mono.Cecil;
 
 namespace Obfuscar
@@ -128,26 +129,54 @@ namespace Obfuscar
             return cmp;
         }
 
-        // taken from https://github.com/mono/mono/blob/master/mcs/tools/linker/Mono.Linker.Steps/TypeMapStep.cs
-        internal static bool MethodMatch(MethodDefinition candidate, MethodReference method)
+        // Initialized lazily for each thread
+        [ThreadStatic] static List<MethodReference> xComparisonStack = null;
+        [ThreadStatic] static List<MethodReference> yComparisonStack = null;
+
+        internal static bool MethodMatch(MethodReference candidate, MethodReference method)
         {
-            //if (!candidate.IsVirtual)
-            //    return false;
+            if (xComparisonStack == null)
+                xComparisonStack = new List<MethodReference>();
 
-            if (candidate.Name != method.Name)
-                return false;
+            if (yComparisonStack == null)
+                yComparisonStack = new List<MethodReference>();
 
-            if (!TypeMatch(candidate.ReturnType, method.ReturnType))
-                return false;
+            // Ideas and code parts from https://github.com/jbevain/cecil/issues/389
+            // There exists a situation where we might get into a recursive state: parameter type comparison might lead to comparing the same
+            // methods again if the parameter types are generic parameters whose owners are these methods. We guard against these by using a
+            // thread static list of all our comparisons carried out in the stack so far, and if we're in progress of comparing them already,
+            // we'll just say that they match.
+            for (int i = 0; i < xComparisonStack.Count; i++)
+                if (xComparisonStack[i] == candidate && yComparisonStack[i] == method)
+                    return true;
 
-            if (candidate.Parameters.Count != method.Parameters.Count)
-                return false;
+            xComparisonStack.Add(candidate);
+            yComparisonStack.Add(method);
 
-            for (int i = 0; i < candidate.Parameters.Count; i++)
-                if (!TypeMatch(candidate.Parameters[i].ParameterType, method.Parameters[i].ParameterType))
+            try
+            {
+                //if (!candidate.IsVirtual)
+                //    return false;
+                if (candidate.Name != method.Name)
                     return false;
 
-            return true;
+                if (!TypeMatch(candidate.ReturnType, method.ReturnType))
+                    return false;
+
+                if (candidate.Parameters.Count != method.Parameters.Count)
+                    return false;
+
+                for (int i = 0; i < candidate.Parameters.Count; i++)
+                    if (!TypeMatch(candidate.Parameters[i].ParameterType, method.Parameters[i].ParameterType))
+                        return false;
+
+                return true;
+            }
+            finally
+            {
+                yComparisonStack.RemoveAt(yComparisonStack.Count - 1);
+                xComparisonStack.RemoveAt(xComparisonStack.Count - 1);
+            }
         }
 
         private static bool TypeMatch(IModifierType a, IModifierType b)
@@ -187,11 +216,32 @@ namespace Obfuscar
             return true;
         }
 
-        private static bool TypeMatch(TypeReference a, TypeReference b)
+        private static bool TypeMatch(GenericParameter a, GenericParameter b)
         {
-            if (a is GenericParameter)
+            if (a == null || b == null)
+                return false;
+            if (ReferenceEquals(a, b))
                 return true;
+            
+            if (a.Position != b.Position)
+                return false;
 
+            if (a.DeclaringMethod != null && b.DeclaringMethod != null)
+                return MethodMatch(a.DeclaringMethod, b.DeclaringMethod);
+
+            if (a.DeclaringType != null && b.DeclaringType != null)
+                return TypeMatch(a.DeclaringType, b.DeclaringType);
+
+            return false;
+        }
+
+        public static bool TypeMatch(TypeReference a, TypeReference b)
+        {
+            var aParameter = a as GenericParameter;
+            var bParameter = b as GenericParameter;
+            if (aParameter != null || bParameter != null)
+                return TypeMatch(aParameter, bParameter);
+            
             if (a is TypeSpecification || b is TypeSpecification)
             {
                 if (a.GetType() != b.GetType())
