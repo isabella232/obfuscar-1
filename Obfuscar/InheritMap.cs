@@ -258,18 +258,10 @@ namespace Obfuscar
 
         public bool Inherits(TypeDefinition type, string interfaceFullName)
         {
-            if (type.FullName == interfaceFullName)
-            {
-                return true;
-            }
-
-
-            if (type.BaseType != null)
-            {
-                var typeDef = project.Cache.GetTypeDefinition(type.BaseType);
-
-                return Inherits(typeDef, interfaceFullName);
-            }
+            var bt = GetBaseTypes(new TypeKey(type));
+            foreach (var baseTypeKey in bt)
+                if (baseTypeKey.Fullname == interfaceFullName)
+                    return true;
 
             return false;
         }
