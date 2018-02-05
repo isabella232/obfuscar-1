@@ -34,11 +34,10 @@ namespace Obfuscar.Helpers
                 if (attrFullName == reflectionObfuscate)
                 {
                     var applyToMembers = (bool) (Helper.GetAttributePropertyByName(attr, "ApplyToMembers") ?? true);
-                    var rename = !(bool) (Helper.GetAttributePropertyByName(attr, "Exclude") ?? true);
-
                     if (fromMember && !applyToMembers)
-                        return !rename;
+                        continue;
 
+                    var rename = !(bool) (Helper.GetAttributePropertyByName(attr, "Exclude") ?? true);
                     return rename;
                 }
             }
