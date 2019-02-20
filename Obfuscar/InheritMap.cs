@@ -300,6 +300,9 @@ namespace Obfuscar
 
         public bool Inherits(TypeDefinition type, string interfaceFullName)
         {
+            if (type.FullName == interfaceFullName)
+                return true;
+
             var baseTypesForInherits = GetBaseTypesForInherits(type);
             return baseTypesForInherits.Contains(interfaceFullName);
         }
