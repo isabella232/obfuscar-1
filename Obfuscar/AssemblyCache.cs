@@ -49,9 +49,10 @@ namespace Obfuscar
             if (type == null)
                 return null;
 
-            TypeDefinition typeDef = type as TypeDefinition;
-            if (typeDef != null)
+            if (type is TypeDefinition typeDef)
                 return typeDef;
+            if (type is GenericInstanceType genericInstanceType)
+                return GetTypeDefinition(genericInstanceType.ElementType);
 
             AssemblyNameReference name = type.Scope as AssemblyNameReference;
             if (name == null)

@@ -256,14 +256,52 @@ namespace Obfuscar
                 return null;
         }
 
+        private readonly Dictionary<TypeKey, HashSet<string>> inheritsCache = new Dictionary<TypeKey, HashSet<string>>();
+        private HashSet<string> GetBaseTypesForInherits(TypeDefinition type)
+        {
+            var key = new TypeKey(type);
+            if (inheritsCache.TryGetValue(key, out var cachedSet))
+                return cachedSet;
+
+            var result = new HashSet<string>();
+
+            // check the interfaces
+            foreach (var ifaceRef in type.Interfaces)
+            {
+                TypeDefinition iface = project.GetTypeDefinition(ifaceRef.InterfaceType)
+                                       ?? project.Cache.GetTypeDefinition(ifaceRef.InterfaceType);
+                if (iface != null)
+                {
+                    result.UnionWith(GetBaseTypesForInherits(iface));
+                    result.Add(iface.FullName);
+                }
+                else
+                    throw new ObfuscarException("Unable to resolve base interface: " + ifaceRef.InterfaceType.FullName);
+            }
+
+            // check the base type unless it isn't in the project, or we don't have one
+            var typeBaseType = type.BaseType;
+            if (typeBaseType != null && typeBaseType.FullName != "System.Object")
+            {
+                TypeDefinition baseType = project.GetTypeDefinition(typeBaseType)
+                                          ?? project.Cache.GetTypeDefinition(typeBaseType);
+                if (baseType != null)
+                {
+                    result.UnionWith(GetBaseTypesForInherits(baseType));
+                    result.Add(baseType.FullName);
+                }
+                else
+                    throw new ObfuscarException("Unable to resolve base type: " + typeBaseType.FullName);
+            }
+
+            inheritsCache[key] = result;
+            return result;
+        }
+
         public bool Inherits(TypeDefinition type, string interfaceFullName)
         {
-            var bt = GetBaseTypes(new TypeKey(type));
-            foreach (var baseTypeKey in bt)
-                if (baseTypeKey.Fullname == interfaceFullName)
-                    return true;
-
-            return false;
+            var baseTypesForInherits = GetBaseTypesForInherits(type);
+            return baseTypesForInherits.Contains(interfaceFullName);
         }
 
         public TypeKey[] GetBaseTypes(TypeKey typeKey)

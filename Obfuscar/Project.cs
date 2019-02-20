@@ -409,20 +409,18 @@ namespace Obfuscar
             if (type == null)
                 return null;
 
-            TypeDefinition typeDef = type as TypeDefinition;
-            if (typeDef == null)
-            {
-                string name = type.GetScopeName();
+            if (type is TypeDefinition typeDef) return typeDef;
+            if (type is GenericInstanceType genericInstanceType) return GetTypeDefinition(genericInstanceType.ElementType);
 
-                AssemblyInfo info;
-                if (assemblyMap.TryGetValue(name, out info))
-                {
-                    string fullName = type.Namespace + "." + type.Name;
-                    typeDef = info.Definition.MainModule.GetType(fullName);
-                }
+            string name = type.GetScopeName();
+            AssemblyInfo info;
+            if (assemblyMap.TryGetValue(name, out info))
+            {
+                string fullName = type.Namespace + "." + type.Name;
+                return info.Definition.MainModule.GetType(fullName);
             }
 
-            return typeDef;
+            return null;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
