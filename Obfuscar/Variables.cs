@@ -50,7 +50,19 @@ namespace Obfuscar
         public string GetValue(string name, string def)
         {
             string value;
-            return this.Replace(vars.TryGetValue(name, out value) ? value : def);
+            var withReplaces = this.Replace(vars.TryGetValue(name, out value) ? value : def);
+            var withEnvVariablesResolved = ResolveEnvironmentVariables(withReplaces);
+            return withEnvVariablesResolved;
+        }
+
+        private static string ResolveEnvironmentVariables(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            return Environment.ExpandEnvironmentVariables(value);
         }
 
         public string Replace(string str)
