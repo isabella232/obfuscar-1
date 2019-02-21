@@ -215,7 +215,7 @@ namespace Obfuscar
                         if (Project.KeyValue != null)
                         {
                             info.Definition.Write(outName, parameters);
-                            MsNetSigner.SignAssemblyFromKeyContainer(outName, Project.Settings.KeyContainer);
+                            MsNetSigner.SignAssemblyFromKeyContainer(outName, Project.KeyContainerName);
                         }
                         else if (Project.KeyPair != null)
                         {
