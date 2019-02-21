@@ -420,7 +420,7 @@ namespace Obfuscar
             AssemblyInfo info;
             if (assemblyMap.TryGetValue(name, out info))
             {
-                string fullName = type.Namespace + "." + type.Name;
+                string fullName = type.GetFullName();
                 return info.Definition.MainModule.GetType(fullName);
             }
 
